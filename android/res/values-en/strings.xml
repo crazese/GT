@@ -175,6 +175,7 @@
     <string name="para_out_toast">please select at least one item.</string>
     <string name="para_out_toast_clearall">delete all selected history data.</string>
     <string name="para_out_toast_saveto">save data to sdcard complete</string>
+    <string name="para_out_toast_uploadto">upload data to ftp</string>
     <!-- Profiler页 -->
     <string name="prof_title">Prof.</string>
     <string name="prof_started">Profiling..</string>

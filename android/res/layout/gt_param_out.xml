@@ -107,6 +107,18 @@
             android:textColor="#cb7418"
             android:textSize="16sp"
             android:visibility="invisible" />
+        <!--add a upload button by chris -->
+        <Button
+            android:id="@+id/btn_upload"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="right"
+            android:layout_marginRight="150dp"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/gw_upload"
+            android:paddingTop="20dp"
+            android:visibility="visible" >
+        </Button>
     </FrameLayout>
 
     <ListView

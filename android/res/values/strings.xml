@@ -179,6 +179,7 @@
     <string name="para_out_toast">请选中至少一个关注项!</string>
     <string name="para_out_toast_clearall">删除所有选中的历史数据</string>
     <string name="para_out_toast_saveto">数据已保存到手机！</string>
+    <string name="para_out_toast_uploadto">数据已上传到ftp</string>
     <!-- Profiler页 -->
     <string name="prof_title">耗时</string>
     <string name="prof_started">统计中..</string>

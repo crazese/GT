@@ -23,10 +23,21 @@
  */
 package com.tencent.wstt.gt.log;
 
+import android.util.Log;
+
+import com.tencent.wstt.gt.FTP;
+import com.tencent.wstt.gt.GTApp;
+import com.tencent.wstt.gt.Result;
+import com.tencent.wstt.gt.api.utils.Env;
 import com.tencent.wstt.gt.api.utils.NetUtils;
 import com.tencent.wstt.gt.manager.OpPerfBridge;
 import com.tencent.wstt.gt.ui.model.TagTimeEntry;
+import com.tencent.wstt.gt.utils.FileUtil;
 import com.tencent.wstt.gt.utils.GTUtils;
+import com.tencent.wstt.gt.utils.ToastUtil;
+
+import java.io.IOException;
+import java.io.File;
 
 public class GTGWInternal {
 	private static String lastSaveFolder = "";
@@ -85,6 +96,29 @@ public class GTGWInternal {
 			}
 		}
 		LogUtils.writeGWDesc(saveEntry, ttes);
+	}
+
+//	add by chris
+	public static void uploadGWData(GWSaveEntry saveEntry) throws IOException {
+		String sFolder = Env.S_ROOT_GW_FOLDER +
+				saveEntry.path1 + FileUtil.separator + saveEntry.path2 + FileUtil.separator + saveEntry.path3 + FileUtil.separator;
+		FTP ftp = new FTP("localhost", "test" , "test");
+		ftp.openConnect();
+		Result result = null;
+		// 上传
+		File folder = new File(sFolder);
+		result = ftp.uploading(folder, FTP.REMOTE_PATH);
+
+		if (result.isSucceed()) {
+			Log.e("upload", "uploading ok...time:" + result.getTime()
+					+ " and size:" + result.getResponse());
+			ToastUtil.ShowShortToast(GTApp.getContext(), "上传成功");
+		} else {
+			Log.e("upload", "uploading fail");
+			ToastUtil.ShowShortToast(GTApp.getContext(), "上传失败");
+		}
+		ftp.closeConnect();
+		return;
 	}
 	
 	public static void clearAllGWData()

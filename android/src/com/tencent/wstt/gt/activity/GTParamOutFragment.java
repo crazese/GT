@@ -23,6 +23,7 @@
  */
 package com.tencent.wstt.gt.activity;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +52,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -69,6 +71,7 @@ import android.widget.TextView;
 public class GTParamOutFragment extends ListFragment implements OnClickListener, OnTouchListener, OnScrollListener {
 	private Button btn_gw_on;
 	private Button btn_gw_off;
+	private Button upload;
 	private ImageButton save;
 	private ImageButton cleardata;
 	private EditText et_savePath1;
@@ -169,11 +172,13 @@ public class GTParamOutFragment extends ListFragment implements OnClickListener,
 		btn_gw_off = (Button) layout.findViewById(R.id.btn_monitor_stop);
 		save = (ImageButton) layout.findViewById(R.id.gwdata_save);
 		cleardata = (ImageButton) layout.findViewById(R.id.gwdata_delete);
+		upload = (Button) layout.findViewById(R.id.btn_upload);
 
 		btn_gw_on.setOnClickListener(this);
 		btn_gw_off.setOnClickListener(this);
 		save.setOnClickListener(this);
 		cleardata.setOnClickListener(this);
+        upload.setOnClickListener(this);
 
 		// 保存对话框
 		View rl_save = inflater.inflate(R.layout.gt_dailog_save_gw, null, false);
@@ -236,6 +241,15 @@ public class GTParamOutFragment extends ListFragment implements OnClickListener,
 		savedata.start();
 	}
 
+//	add by chris
+	private void uploadData()
+	{
+		Log.i("upload", "start uploadData");
+//		proDialog = ProgressDialog.show(getActivity(),"Uploading..","uploading..wait....",true, true);
+		Thread uploaddata = new Thread(uploadDataHandler);
+		uploaddata.start();
+	}
+
 	private void showAlam(int res)
 	{
 		if (invalid_alarm != null)
@@ -274,36 +288,42 @@ public class GTParamOutFragment extends ListFragment implements OnClickListener,
 			btn_gw_on.setVisibility(View.GONE);
 			save.setVisibility(View.GONE);
 			cleardata.setVisibility(View.GONE);
+			upload.setVisibility(View.GONE);
 		} else {
 			btn_gw_off.setVisibility(View.GONE);
 			btn_gw_on.setVisibility(View.VISIBLE);
 			save.setVisibility(View.VISIBLE);
 			cleardata.setVisibility(View.VISIBLE);
+			upload.setVisibility(View.VISIBLE);
 		}
 	}
 
 	@Override
-	public void onClick(View v) {
-		Message msg = opHandler.obtainMessage();
-		switch (v.getId()) {
-		case R.id.btn_monitor:
-			msg.what = 0; // 启动gw
-			msg.sendToTarget();
-			break;
-		case R.id.btn_monitor_stop: // 停止gw
-			msg.what = 1;
-			msg.sendToTarget();
-			break;
-		case R.id.gwdata_delete: // 删除数据
-			msg.what = 2;
-			msg.sendToTarget();
-			break;
-		case R.id.gwdata_save: // 保存数据
-			msg.what = 3;
-			msg.sendToTarget();
-			break;
-		}
-	}
+    public void onClick(View v) {
+        Message msg = opHandler.obtainMessage();
+        switch (v.getId()) {
+            case R.id.btn_monitor:
+                msg.what = 0; // 启动gw
+                msg.sendToTarget();
+                break;
+            case R.id.btn_monitor_stop: // 停止gw
+                msg.what = 1;
+                msg.sendToTarget();
+                break;
+            case R.id.gwdata_delete: // 删除数据
+                msg.what = 2;
+                msg.sendToTarget();
+                break;
+            case R.id.gwdata_save: // 保存数据
+                msg.what = 3;
+                msg.sendToTarget();
+                break;
+            case R.id.btn_upload: // 上传数据
+                msg.what = 999;
+                msg.sendToTarget();
+                break;
+        }
+    }
 
 	private boolean isOneItemSelected() {
 		TagTimeEntry[] te = OpPerfBridge.getAllEnableProfilerData();
@@ -318,76 +338,80 @@ public class GTParamOutFragment extends ListFragment implements OnClickListener,
 	private Handler opHandler = new Handler() { // 处理switchtitle上按钮事件
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
-			case 0: // run GW
-				if (!GTMemoryDaemonHelper.startGWOrProfValid()) {
-					break;
-				}
+                case 0: // run GW
+                    if (!GTMemoryDaemonHelper.startGWOrProfValid()) {
+                        break;
+                    }
 
-				if (isOneItemSelected()) {
-					OpUIManager.gw_running = true;
-					initGwOnOff();
-				}
-				break;
-			case 1: // stop GW
-				OpUIManager.gw_running = false;
-				initGwOnOff();
-				break;
-			case 2: // cleardata
-				if (isOneItemSelected()) {
-					OpUIManager.list_change = true;
-					ToastUtil.ShowLongToast(GTApp.getContext(), getString(R.string.para_out_toast_clearall));
-					AlertDialog.Builder builder = new Builder(getActivity());
-					builder.setMessage(getString(R.string.clear_tip));
-					builder.setTitle(getString(R.string.clear));
-					builder.setPositiveButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                    if (isOneItemSelected()) {
+                        OpUIManager.gw_running = true;
+                        initGwOnOff();
+                    }
+                    break;
+                case 1: // stop GW
+                    OpUIManager.gw_running = false;
+                    initGwOnOff();
+                    break;
+                case 2: // cleardata
+                    if (isOneItemSelected()) {
+                        OpUIManager.list_change = true;
+                        ToastUtil.ShowLongToast(GTApp.getContext(), getString(R.string.para_out_toast_clearall));
+                        AlertDialog.Builder builder = new Builder(getActivity());
+                        builder.setMessage(getString(R.string.clear_tip));
+                        builder.setTitle(getString(R.string.clear));
+                        builder.setPositiveButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
 
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.dismiss();
-						}
-					});
-					builder.setNegativeButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        builder.setNegativeButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
 
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							// UI需要清理dataSet
-							GTGWInternal.clearAllEnableGWData();
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // UI需要清理dataSet
+                                GTGWInternal.clearAllEnableGWData();
 
-							// add on 20131225 有手动tag记录内存值的情况也清理了
-							GTMemHelperFloatview.memInfoList.clear();
-							GTMemHelperFloatview.tagTimes = 0;
-							dialog.dismiss();
+                                // add on 20131225 有手动tag记录内存值的情况也清理了
+                                GTMemHelperFloatview.memInfoList.clear();
+                                GTMemHelperFloatview.tagTimes = 0;
+                                dialog.dismiss();
 
-						}
-					});
-					builder.setCancelable(false);
-					builder.show();
-				}
-				break;
-			case 3: // save
-				dismissAlam();
-				if (isOneItemSelected()) {
-					OpUIManager.list_change = true;
-					String lastSaveLog = GTGWInternal.getLastSaveFolder();
-					
-					// TODO 考虑保存路径的持久化
-					et_savePath1.setText(Env.CUR_APP_NAME);
-					et_savePath2.setText(Env.CUR_APP_VER);
-					et_savePath3.setText(lastSaveLog);
-					gwhis_save.show();
-				}
-				break;
-			case 4: // 保存文件后 动画取消
-				dismissProDialog();
-				ToastUtil.ShowLongToast(GTApp.getContext(), getString(R.string.para_out_toast_saveto), "center");
-				break;
-			case 5: // 驱动列表刷新
-				// 清理累积的消息，保留一次即可
-				removeMessages(5);
-				doResume();
-			default:
-				break;
-			}
+                            }
+                        });
+                        builder.setCancelable(false);
+                        builder.show();
+                    }
+                    break;
+                case 3: // save
+                    dismissAlam();
+                    if (isOneItemSelected()) {
+                        OpUIManager.list_change = true;
+                        String lastSaveLog = GTGWInternal.getLastSaveFolder();
+
+                        // TODO 考虑保存路径的持久化
+                        et_savePath1.setText(Env.CUR_APP_NAME);
+                        et_savePath2.setText(Env.CUR_APP_VER);
+                        et_savePath3.setText(lastSaveLog);
+                        gwhis_save.show();
+                    }
+                    break;
+                case 4: // 保存文件后 动画取消
+                    dismissProDialog();
+                    ToastUtil.ShowLongToast(GTApp.getContext(), getString(R.string.para_out_toast_saveto), "center");
+                    break;
+                case 5: // 驱动列表刷新
+                    // 清理累积的消息，保留一次即可
+                    removeMessages(5);
+                    doResume();
+                case 999: //上传数据至ftp
+                    uploadData();
+                    ToastUtil.ShowLongToast(GTApp.getContext(), getString(R.string.para_out_toast_uploadto), "center");
+                    break;
+                default:
+                    break;
+            }
 		}
 	};
 
@@ -454,6 +478,31 @@ public class GTParamOutFragment extends ListFragment implements OnClickListener,
 			opHandler.sendMessage(message); // save 数据时的动画
 		}
 	};
+
+//	add by chris
+	Runnable uploadDataHandler = new Runnable() {
+	@Override
+	public void run() {
+		String path3 = et_savePath3.getText().toString().trim();
+		String path2 = et_savePath2.getText().toString().trim();
+		String path1 = et_savePath1.getText().toString().trim();
+		String testDesc = et_saveTestDesc.getText().toString().trim();
+		if (path1.isEmpty() || path2.isEmpty() || path3.isEmpty())
+		{
+			ToastUtil.ShowLongToast(GTApp.getContext(), "path is empty", "center");
+			return;
+		}
+
+		GWSaveEntry saveEntry = new GWSaveEntry(path1, path2, path3, testDesc);
+		try {
+			GTGWInternal.uploadGWData(saveEntry);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+};
+
 
 	@Override
 	public boolean onTouch(View v, MotionEvent ev) {
