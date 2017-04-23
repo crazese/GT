@@ -103,7 +103,13 @@ public class GTGWInternal {
 		String sFolder = Env.S_ROOT_GW_FOLDER +
 				saveEntry.path1 + FileUtil.separator + saveEntry.path2 + FileUtil.separator + saveEntry.path3 + FileUtil.separator;
 		FTP ftp = new FTP("localhost", "test" , "test");
-		ftp.openConnect();
+		try {
+			ftp.openConnect();
+		}catch (IOException e){
+			ToastUtil.ShowShortToast(GTApp.getContext(), "连接ftp server失败");
+			e.printStackTrace();
+		}
+
 		Result result = null;
 		// 上传
 		File folder = new File(sFolder);

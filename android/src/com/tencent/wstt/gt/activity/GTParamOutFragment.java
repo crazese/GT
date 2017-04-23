@@ -407,7 +407,7 @@ public class GTParamOutFragment extends ListFragment implements OnClickListener,
                     doResume();
                 case 999: //上传数据至ftp
                     uploadData();
-                    ToastUtil.ShowLongToast(GTApp.getContext(), getString(R.string.para_out_toast_uploadto), "center");
+//                    ToastUtil.ShowLongToast(GTApp.getContext(), getString(R.string.para_out_toast_uploadto), "center");
                     break;
                 default:
                     break;
@@ -489,7 +489,7 @@ public class GTParamOutFragment extends ListFragment implements OnClickListener,
 		String testDesc = et_saveTestDesc.getText().toString().trim();
 		if (path1.isEmpty() || path2.isEmpty() || path3.isEmpty())
 		{
-			ToastUtil.ShowLongToast(GTApp.getContext(), "path is empty", "center");
+			ToastUtil.ShowLongToast(GTApp.getContext(), "path is empty, please save first", "center");
 			return;
 		}
 
