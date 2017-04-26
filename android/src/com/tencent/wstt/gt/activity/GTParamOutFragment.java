@@ -319,7 +319,7 @@ public class GTParamOutFragment extends ListFragment implements OnClickListener,
                 msg.sendToTarget();
                 break;
             case R.id.btn_upload: // 上传数据
-                msg.what = 999;
+                msg.what = 6;
                 msg.sendToTarget();
                 break;
         }
@@ -401,14 +401,14 @@ public class GTParamOutFragment extends ListFragment implements OnClickListener,
                     dismissProDialog();
                     ToastUtil.ShowLongToast(GTApp.getContext(), getString(R.string.para_out_toast_saveto), "center");
                     break;
-                case 5: // 驱动列表刷新
-                    // 清理累积的消息，保留一次即可
-                    removeMessages(5);
-                    doResume();
-                case 999: //上传数据至ftp
+                case 6: //上传数据至ftp
                     uploadData();
 //                    ToastUtil.ShowLongToast(GTApp.getContext(), getString(R.string.para_out_toast_uploadto), "center");
                     break;
+				case 5: // 驱动列表刷新
+					// 清理累积的消息，保留一次即可
+					removeMessages(5);
+					doResume();
                 default:
                     break;
             }
