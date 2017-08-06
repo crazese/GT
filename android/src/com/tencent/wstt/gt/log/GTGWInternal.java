@@ -105,8 +105,8 @@ public class GTGWInternal {
 		FTP ftp = new FTP("localhost", "test" , "test");
 		try {
 			ftp.openConnect();
-		}catch (IOException e){
-			ToastUtil.ShowShortToast(GTApp.getContext(), "连接ftp server失败");
+		}catch (Exception e){
+			ToastUtil.ShowLongToast(GTApp.getContext(), "连接ftp server失败","center");
 			e.printStackTrace();
 		}
 

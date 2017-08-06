@@ -49,6 +49,9 @@ public class BaseCommandReceiver extends BroadcastReceiver {
 	// 结束测试，需要参数应用名和进程ID
 	public static final String ACTION_END_TEST = "com.tencent.wstt.gt.baseCommand.endTest";
 
+	// 结果上传，需要参数应用名和进程ID add by chris
+	public static final String ACTION_UPLOAD_TEST = "com.tencent.wstt.gt.baseCommand.uploadTest";
+
 	// 关闭GT
 	public static final String ACTION_EXIT_GT = "com.tencent.wstt.gt.baseCommand.exitGT";
 
@@ -175,6 +178,13 @@ public class BaseCommandReceiver extends BroadcastReceiver {
 				String desc = intent.getStringExtra(INTENT_KEY_SAVE_DESC);
 				// 当folderName==null时，会保存到上一次保存的目录，如果没有上一次的目录，会保存到默认目录GW_DATA下
 				GTAutoTestInternal.endGlobalTest(folderName, desc, true);
+			}
+			else if (action.equals(ACTION_UPLOAD_TEST))
+			{
+				String folderName = intent.getStringExtra(INTENT_KEY_SAVE_FOLDER);
+				String desc = intent.getStringExtra(INTENT_KEY_SAVE_DESC);
+				GTAutoTestInternal.uploadGlobalTest(folderName, desc);
+
 			}
 			else if (action.equals(ACTION_EXIT_GT))
 			{

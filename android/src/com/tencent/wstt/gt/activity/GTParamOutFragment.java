@@ -245,7 +245,6 @@ public class GTParamOutFragment extends ListFragment implements OnClickListener,
 	private void uploadData()
 	{
 		Log.i("upload", "start uploadData");
-//		proDialog = ProgressDialog.show(getActivity(),"Uploading..","uploading..wait....",true, true);
 		Thread uploaddata = new Thread(uploadDataHandler);
 		uploaddata.start();
 	}

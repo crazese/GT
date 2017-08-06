@@ -23,6 +23,7 @@
  */
 package com.tencent.wstt.gt.autotest;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -182,6 +183,43 @@ public class GTAutoTestInternal {
 		}
 
 		// 保存
+
+		GWSaveEntry saveEntry = path2SaveEntry(path,desc);
+		GTGWInternal.saveAllEnableGWData(saveEntry);
+
+		if (clear)
+		{
+			// 1.清空老数据
+			GTGWInternal.clearAllEnableGWData();
+		}
+
+		// 2.保存后要把所有出参置为非monitor状态
+		for (List<OutPara> ops : tempMap.values())
+		{
+			if (ops != null)
+			{
+				for (OutPara op : ops)
+				{
+					op.setMonitor(false); // 只有monitor状态下才会保存，和手工操作一样
+				}
+			}
+		}
+
+		if (clear)
+		{
+			// 3.清理旧记录
+			tempMap.clear();
+		}
+
+		// 通知AUT页同步状态
+		GTApp.getAUTHandler().sendEmptyMessage(0);
+	}
+
+
+	//	add by chris
+	//	尝试把path转saveEntry的部分提取出来，用于后续的上传
+	public static GWSaveEntry path2SaveEntry(String path,String desc)
+	{
 		String path1 = null;
 		String path2 = null;
 		String path3 = null;
@@ -220,37 +258,17 @@ public class GTAutoTestInternal {
 		}
 
 		GWSaveEntry saveEntry = new GWSaveEntry(path1, path2, path3, desc);
-		
-		GTGWInternal.saveAllEnableGWData(saveEntry);
-
-		if (clear)
-		{
-			// 1.清空老数据
-			GTGWInternal.clearAllEnableGWData();
-		}
-
-		// 2.保存后要把所有出参置为非monitor状态
-		for (List<OutPara> ops : tempMap.values())
-		{
-			if (ops != null)
-			{
-				for (OutPara op : ops)
-				{
-					op.setMonitor(false); // 只有monitor状态下才会保存，和手工操作一样
-				}
-			}
-		}
-
-		if (clear)
-		{
-			// 3.清理旧记录
-			tempMap.clear();
-		}
-
-		// 通知AUT页同步状态
-		GTApp.getAUTHandler().sendEmptyMessage(0);
+		return saveEntry;
 	}
-	
+
+//	add by chris
+//	用于上传数据
+	public static void uploadGlobalTest(String path, String desc) throws IOException {
+		GWSaveEntry saveEntry = path2SaveEntry(path,desc);
+		GTGWInternal.uploadGWData(saveEntry);
+	}
+
+
 	/**
 	 * 清理测试当前的测试数据，请保证先停止被测应用的数据采集，否则操作不会被执行
 	 */
